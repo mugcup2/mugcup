@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>المفضلة — Mug Cup</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav>
+  <a class="nav-logo-btn" href="index.html" title="الرئيسية">
+    <img src="logo.png" alt="Mug Cup">
+  </a>
+  <div class="nav-actions">
+    <button class="nav-btn" onclick="location.href='favorites.html'" title="المفضلة">
+      🤍<span class="badge fav-badge">0</span>
+    </button>
+    <button class="nav-btn" onclick="openCart()" title="السلة">
+      🛒<span class="badge cart-badge">0</span>
+    </button>
+  </div>
+</nav>
+<div style="background:var(--white);border-bottom:1px solid var(--border);padding:1.5rem 2rem;display:flex;align-items:center;gap:12px">
+  <span style="font-size:28px">❤️</span>
+  <div>
+    <h1 style="font-size:22px;font-weight:900;color:var(--burg)">المفضلة</h1>
+    <div id="fav-count" style="font-size:13px;color:var(--muted)"></div>
+  </div>
+</div>
+<div style="max-width:1100px;margin:0 auto;padding:2rem">
+  <div class="prod-grid" id="fav-grid"></div>
+  <div id="fav-empty" class="empty-state" style="display:none">
+    <div class="ei">🤍</div>
+    <div style="font-size:18px;font-weight:700;color:var(--burg);margin-bottom:8px">قائمة المفضلة فارغة</div>
+    <div style="margin-bottom:1.5rem">اضغط ❤️ على أي منتج لإضافته</div>
+    <a href="index.html" class="btn btn-burg">تصفح المتجر ←</a>
+  </div>
+</div>
+<div id="cart-ph"></div>
+<footer><strong>Mug Cup</strong> — كوب لكل لحظة ☕</footer>
+<script src="js/store.js"></script>
+<script>
+
+document.getElementById('cart-ph').innerHTML = buildCartHTML();
+updateBadges(); renderFavorites();
+
+async function renderFavorites(){
+  const favs=products.filter(p=>favorites.includes(p.id));
+  document.getElementById('fav-count').textContent=favs.length===0?'لا يوجد مفضلة':favs.length+' منتج';
+  const grid=document.getElementById('fav-grid');
+  if(favs.length===0){grid.innerHTML='';document.getElementById('fav-empty').style.display='block';return;}
+  document.getElementById('fav-empty').style.display='none';
+  grid.innerHTML=favs.map(p=>`
+    <div class="prod-card">
+      <div class="prod-img" id="pimg-${p.id}">
+        <div class="ph">${p.emoji}</div>
+        <button class="fav-btn on" data-id="${p.id}" onclick="toggleFav(${p.id});renderFavorites()">❤️</button>
+      </div>
+      <div class="prod-body">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-desc">${p.desc}</div>
+        <div class="prod-foot">
+          <div class="prod-price">${p.price} ${CURRENCY}</div>
+          <button class="add-btn" onclick="addToCart(${p.id})">+</button>
+        </div>
+      </div>
+    </div>`).join('');
+  for(const p of favs){
+    const c=document.getElementById('pimg-'+p.id);
+    if(c) await renderFirstMedia(p,c);
+  }
+}
+</script>
+</body>
+</html>

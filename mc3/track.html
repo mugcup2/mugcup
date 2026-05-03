@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>تتبع الطلب — Mug Cup</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="nav-ph"></div>
+<div class="track-page">
+  <div style="text-align:center;margin-bottom:1.5rem">
+    <div style="font-size:40px;margin-bottom:.5rem">📦</div>
+    <h1 style="font-size:22px;font-weight:900;color:var(--burg)">تتبع طلبك</h1>
+    <p style="color:var(--muted);font-size:13px;margin-top:4px">أدخل رقم طلبك لمعرفة حالته</p>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:1.5rem">
+    <input type="text" id="track-inp" placeholder="مثلاً: MUG-12345"
+      style="flex:1;padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);font-family:inherit;font-size:14px;outline:none;transition:.2s"
+      onfocus="this.style.borderColor='var(--burg)'" onblur="this.style.borderColor='var(--border)'"
+      onkeydown="if(event.key==='Enter')trackOrder()">
+    <button class="btn btn-burg" onclick="trackOrder()">بحث</button>
+  </div>
+
+  <div id="track-result"></div>
+
+  <div style="text-align:center;margin-top:2rem">
+    <a href="index.html" style="color:var(--burg);font-size:13px;font-weight:700;text-decoration:none">← رجوع للمتجر</a>
+  </div>
+</div>
+<div id="cart-ph"></div>
+<footer><strong>Mug Cup</strong> — كوب لكل لحظة ☕</footer>
+
+<script src="js/store.js"></script>
+<script>
+document.getElementById('nav-ph').innerHTML  = buildNav('');
+document.getElementById('cart-ph').innerHTML = buildCartHTML();
+updateBadges();
+
+// Auto-fill from URL param
+const urlId = new URLSearchParams(location.search).get('id');
+if(urlId){ document.getElementById('track-inp').value=urlId; trackOrder(); }
+
+// Wait for Firebase then auto-search
+const origInit = window.initFirebase;
+
+async function trackOrder(){
+  const id = document.getElementById('track-inp').value.trim().toUpperCase();
+  if(!id){ toast('أدخل رقم الطلب'); return; }
+  const res = document.getElementById('track-result');
+  res.innerHTML='<div style="text-align:center;padding:1rem;color:var(--muted)">🔍 جاري البحث...</div>';
+
+  // Try to find in loaded orders (Firebase realtime)
+  setTimeout(()=>{
+    const order = orders.find(o=>o.id===id);
+    if(!order){
+      res.innerHTML=`<div class="empty-state"><div class="ei">🔍</div><div style="font-size:15px;font-weight:700;color:var(--burg);margin-bottom:6px">لم يتم العثور على الطلب</div><div style="font-size:13px">تأكد من رقم الطلب</div></div>`;
+      return;
+    }
+    renderTrackResult(order);
+  }, 800);
+}
+
+function renderTrackResult(o){
+  const steps = [
+    {key:'جديد',       label:'تم استلام الطلب',    icon:'✅'},
+    {key:'قيد التوصيل', label:'الطلب في الطريق إليك', icon:'🚚'},
+    {key:'مكتمل',      label:'تم التسليم',          icon:'🎉'},
+  ];
+  const statusIdx = steps.findIndex(s=>s.key===o.status);
+
+  const stepsHTML = steps.map((s,i)=>{
+    const done   = i <= statusIdx;
+    const active = i === statusIdx;
+    return `<div class="track-step">
+      <div class="ts-dot ${done?'done':''} ${active?'active':''}">${done?s.icon:'○'}</div>
+      <div class="ts-info">
+        <div class="ts-title" style="${done?'color:var(--burg)':'color:var(--muted)'}">${s.label}</div>
+        ${active?`<div class="ts-time">الحالة الحالية</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const itemsHTML = (o.items||[]).map(item=>{
+    const optStr=item.selectedOptions?Object.values(item.selectedOptions).filter(Boolean).join(' · '):'';
+    const img=item.firstImg?`<img src="${item.firstImg.url}" style="width:100%;height:100%;object-fit:cover">`:`<span style="font-size:22px">${item.emoji}</span>`;
+    return `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:46px;height:46px;border-radius:8px;overflow:hidden;background:var(--soft);flex-shrink:0;display:flex;align-items:center;justify-content:center">${img}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--burg)">${item.name}</div>
+        ${optStr?`<div style="font-size:11px;color:var(--muted)">${optStr}</div>`:''}
+      </div>
+      <div style="font-size:13px;font-weight:700;color:var(--burg)">×${item.qty}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('track-result').innerHTML=`
+    <div style="background:var(--white);border-radius:14px;border:1px solid var(--border);padding:1.3rem;margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:16px;font-weight:900;color:var(--burg)">${o.id}</div>
+          <div style="font-size:12px;color:var(--muted)">${o.date||''} ${o.time||''}</div>
+        </div>
+        <span class="o-badge ${o.status==='جديد'?'o-new':o.status==='قيد التوصيل'?'o-prog':o.status==='مكتمل'?'o-done':'o-cancel'}">${o.status}</span>
+      </div>
+      <div class="track-steps">${stepsHTML}</div>
+    </div>
+    <div style="background:var(--white);border-radius:14px;border:1px solid var(--border);padding:1.3rem;margin-bottom:1rem">
+      <div style="font-size:14px;font-weight:900;color:var(--burg);margin-bottom:.8rem">🛍 المنتجات</div>
+      ${itemsHTML}
+      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:900;color:var(--burg);margin-top:10px"><span>الإجمالي</span><span>${o.total} ${CURRENCY}</span></div>
+    </div>
+    <div style="background:var(--soft);border-radius:12px;padding:1rem;font-size:13px">
+      <div style="font-weight:700;color:var(--burg);margin-bottom:6px">بيانات التوصيل</div>
+      <div style="color:var(--muted)">الاسم: <b style="color:var(--text)">${o.name}</b></div>
+      <div style="color:var(--muted)">الهاتف: <b style="color:var(--text);direction:ltr;display:inline-block">${o.phone}</b></div>
+      <div style="color:var(--muted)">العنوان: <b style="color:var(--text)">${o.address}</b></div>
+      ${o.notes?`<div style="color:var(--muted)">ملاحظات: <b style="color:var(--text)">${o.notes}</b></div>`:''}
+    </div>`;
+}
+</script>
+</body>
+</html>

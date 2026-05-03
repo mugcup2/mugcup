@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mug Cup — أكواب وملصقات</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="nav-ph"></div>
+
+<div class="overlay" id="beh-overlay" onclick="if(event.target.id==='beh-overlay')closeBehance()">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;position:relative;width:fit-content;max-width:95vw">
+    <button class="modal-x" onclick="closeBehance()">✕</button>
+    <div style="font-size:15px;font-weight:900;color:var(--burg);margin-bottom:1rem;padding-bottom:8px;border-bottom:1px solid var(--border)">تصاميمنا على Behance</div>
+    <iframe src="https://www.behance.net/embed/project/248554137?ilo0=1" height="316" width="404" allowfullscreen frameborder="0" allow="clipboard-write" referrerpolicy="strict-origin-when-cross-origin" style="border-radius:10px;display:block;max-width:90vw"></iframe>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="corner-ornament tl"></div>
+  <div class="corner-ornament br"></div>
+  <div class="hero-inner">
+    <div class="hero-tagline">متجر الأكواب والملصقات</div>
+    <h1 class="hero-title">كوب لكل لحظة<em>وملصق لكل قصة</em></h1>
+    <div class="hero-divider"></div>
+  </div>
+</div>
+
+<div class="cat-strip">
+  <button class="cat-btn" id="cb-all" onclick="selectCat('all')">
+    <span class="cb-icon">🛍</span><span>جميع المنتجات</span>
+    <span class="cb-count" id="cc-all"></span>
+  </button>
+  <button class="cat-btn on" id="cb-stickers" onclick="selectCat('stickers')">
+    <span class="cb-icon">🏷</span><span>الملصقات</span>
+    <span class="cb-count" id="cc-stickers"></span>
+  </button>
+  <button class="cat-btn" id="cb-mugs" onclick="selectCat('mugs')">
+    <span class="cb-icon">☕</span><span>الكاسات</span>
+    <span class="cb-count" id="cc-mugs"></span>
+  </button>
+</div>
+
+<div class="prod-section">
+  <div class="section-bar">
+    <div class="search-wrap">
+      <input type="text" id="search-inp" placeholder="ابحث عن أي منتج..." oninput="renderProducts()">
+      <span class="si">🔍</span>
+    </div>
+  </div>
+  <div class="prod-grid" id="prod-grid"></div>
+  <div id="empty-state" class="empty-state" style="display:none">
+    <div class="ei">🔍</div><div>لا توجد نتائج</div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="det-overlay"><div class="modal" id="det-modal"></div></div>
+
+<!-- CHECKOUT MODAL -->
+<div class="overlay" id="co-overlay"><div class="co-wrap" id="co-modal"></div></div>
+
+<!-- LIGHTBOX -->
+<div class="overlay" id="lb-overlay" onclick="closeLB()" style="z-index:800;background:rgba(0,0,0,.92)">
+  <button onclick="closeLB()" style="position:fixed;top:16px;left:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:20px;cursor:pointer;z-index:801">✕</button>
+  <img id="lb-img" src="" style="max-width:90vw;max-height:88vh;object-fit:contain;border-radius:10px;display:none">
+  <video id="lb-vid" src="" controls style="max-width:90vw;max-height:88vh;border-radius:10px;display:none"></video>
+</div>
+
+<div id="cart-ph"></div>
+
+<!-- TRACK ORDER LINK -->
+<div style="text-align:center;padding:.8rem;background:var(--soft);border-top:1px solid var(--border)">
+  <a href="track.html" style="color:var(--burg);font-size:13px;font-weight:700;text-decoration:none">📦 تتبع طلبك ←</a>
+</div>
+
+<footer><strong>Mug Cup</strong> — كوب لكل لحظة ☕</footer>
+
+<script src="js/store.js"></script>
+<script>
+let activeCat = 'stickers';
+let detQty = 1, detId = null;
+let detSelOpts = {};
+
+document.getElementById('nav-ph').innerHTML  = buildNav('home');
+document.getElementById('cart-ph').innerHTML = buildCartHTML();
+document.getElementById('det-overlay').onclick = e=>{ if(e.target.id==='det-overlay') closeDet(); };
+document.getElementById('co-overlay').onclick  = e=>{ if(e.target.id==='co-overlay') document.getElementById('co-overlay').classList.remove('open'); };
+updateBadges(); updateCatCounts(); renderProducts();
+
+function openBehance(){ document.getElementById('beh-overlay').classList.add('open'); }
+function closeBehance(){ document.getElementById('beh-overlay').classList.remove('open'); }
+
+// ── Category ──────────────────────────────────
+function selectCat(cat){
+  activeCat=cat;
+  ['all','stickers','mugs'].forEach(c=>document.getElementById('cb-'+c).classList.toggle('on',c===cat));
+  document.getElementById('search-inp').value='';
+  renderProducts();
+  document.querySelector('.prod-section').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function updateCatCounts(){
+  document.getElementById('cc-all').textContent      = products.length+' منتج';
+  document.getElementById('cc-stickers').textContent = products.filter(p=>p.cat==='stickers').length+' منتج';
+  document.getElementById('cc-mugs').textContent     = products.filter(p=>p.cat==='mugs').length+' منتج';
+}
+
+// ── Products ──────────────────────────────────
+function renderProducts(){
+  const q = (document.getElementById('search-inp').value||'').trim().toLowerCase();
+  const items = q
+    ? products.filter(p=>p.name.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q))
+    : activeCat==='all' ? products : products.filter(p=>p.cat===activeCat);
+  const grid=document.getElementById('prod-grid');
+  const empty=document.getElementById('empty-state');
+  if(items.length===0){ grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  grid.innerHTML = items.map(p=>{
+    const img = p.images&&p.images[0]
+      ? (p.images[0].type==='video'
+          ? `<video src="${p.images[0].url}" muted playsinline style="width:100%;height:100%;object-fit:cover"></video>`
+          : `<img src="${p.images[0].url}" alt="${p.name}">`)
+      : `<div class="ph">${p.emoji}</div>`;
+    return `<div class="prod-card">
+      <div class="prod-img" onclick="openDet('${p.id}')">
+        ${img}
+        ${p.badge?`<div class="prod-badge">${p.badge}</div>`:''}
+        <button class="fav-btn${favorites.includes(p.id)?' on':''}" data-id="${p.id}"
+          onclick="event.stopPropagation();toggleFav('${p.id}')">${favorites.includes(p.id)?'❤️':'🤍'}</button>
+      </div>
+      <div class="prod-body" onclick="openDet('${p.id}')">
+        <div class="prod-name">${p.name}</div>
+        <div class="prod-desc">${p.desc}</div>
+        <div class="prod-foot" onclick="event.stopPropagation()">
+          <div class="prod-price">${p.price} ${CURRENCY}</div>
+          <button class="add-btn" onclick="openDet('${p.id}')">+</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Detail Modal ──────────────────────────────
+function openDet(id){
+  detId=id; detQty=1; detSelOpts={};
+  const p=products.find(x=>x.id===id); if(!p) return;
+  const imgs=p.images||[];
+  const first=imgs[0];
+
+  const mediaMain = first
+    ? first.type==='video'
+      ? `<video src="${first.url}" controls style="width:100%;height:100%;object-fit:cover"></video>`
+      : `<img src="${first.url}" style="width:100%;height:100%;object-fit:cover">`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:80px">${p.emoji}</div>`;
+
+  const thumbs = imgs.length>1 ? `<div class="gal-thumbs">${imgs.map((m,i)=>`
+    <div class="gal-th${i===0?' on':''}" onclick="switchGal(${i},'${p.id}')" id="th-${i}">
+      ${m.type==='image'?`<img src="${m.url}">`:`<div style="width:100%;height:100%;background:var(--burg3);display:flex;align-items:center;justify-content:center;color:var(--cream);font-size:16px">▶</div>`}
+    </div>`).join('')}</div>` : '';
+
+  // Options sections
+  const optsHTML = buildOptionsHTML(p);
+
+  document.getElementById('det-modal').innerHTML=`
+    <button class="modal-x" onclick="closeDet()">✕</button>
+    <div class="det-grid">
+      <div class="det-gallery">
+        <div class="gal-main" id="gal-main-${id}" onclick="openLB('${first?.url||''}','${first?.type||'image'}')">${mediaMain}</div>
+        ${thumbs}
+      </div>
+      <div class="det-info">
+        <h2>${p.name}</h2>
+        <div class="det-price">${p.price} ${CURRENCY}</div>
+        <div class="det-desc">${p.desc}</div>
+        ${optsHTML}
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--burg);margin-bottom:7px">الكمية</div>
+          <div class="qty-row">
+            <button class="qty-btn" onclick="chDQ(-1)">−</button>
+            <span class="qty-n" id="dqn">1</span>
+            <button class="qty-btn" onclick="chDQ(1)">+</button>
+          </div>
+        </div>
+        <div id="opts-warning" style="font-size:12px;color:#cc4444;display:none">⚠️ يرجى اختيار جميع الخيارات</div>
+        <div class="det-actions">
+          <button class="btn btn-burg" style="flex:1;justify-content:center" onclick="addToCartFromDet('${id}')">🛒 أضف للسلة</button>
+          <button class="btn${favorites.includes(p.id)?' btn-cream':' btn-out'}" onclick="toggleFav('${p.id}');openDet('${id}')">${favorites.includes(p.id)?'❤️':'🤍'}</button>
+        </div>
+      </div>
+    </div>`;
+  window._detImgs = imgs;
+  document.getElementById('det-overlay').classList.add('open');
+}
+function closeDet(){ document.getElementById('det-overlay').classList.remove('open'); }
+function chDQ(d){ detQty=Math.max(1,detQty+d); document.getElementById('dqn').textContent=detQty; }
+
+function buildOptionsHTML(p){
+  let html='';
+  // Colors
+  if(p.colors&&p.colors.length>0){
+    html+=`<div class="opt-group">
+      <div class="opt-label">اللون <span id="sel-color-lbl" style="font-weight:400;color:var(--muted)"></span></div>
+      <div class="opt-btns" id="color-opts">
+        ${p.colors.map(col=>`
+          <div class="color-swatch" title="${col.name}" style="background:${col.hex}"
+            onclick="selectOpt('color','${col.name}',this,'color-opts')"></div>`).join('')}
+      </div>
+    </div>`;
+  }
+  // Custom options (size, material, etc.)
+  if(p.options&&p.options.length>0){
+    p.options.forEach(opt=>{
+      html+=`<div class="opt-group">
+        <div class="opt-label">${opt.label}</div>
+        <div class="opt-btns" id="opt-${opt.label}">
+          ${opt.values.map(v=>`<button class="opt-btn" onclick="selectOpt('${opt.label}','${v}',this,'opt-${opt.label}')">${v}</button>`).join('')}
+        </div>
+      </div>`;
+    });
+  }
+  return html;
+}
+
+function selectOpt(key, val, el, groupId){
+  document.querySelectorAll(`#${groupId} .opt-btn, #${groupId} .color-swatch`).forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  detSelOpts[key]=val;
+  if(key==='color'){
+    const lbl=document.getElementById('sel-color-lbl');
+    if(lbl) lbl.textContent='— '+val;
+  }
+}
+
+function addToCartFromDet(id){
+  const p=products.find(x=>x.id===id); if(!p) return;
+  // Check all required options selected
+  const requiredOpts = [];
+  if(p.colors&&p.colors.length>0) requiredOpts.push('color');
+  if(p.options) p.options.forEach(o=>requiredOpts.push(o.label));
+  const missing = requiredOpts.filter(k=>!detSelOpts[k]);
+  if(missing.length>0){
+    document.getElementById('opts-warning').style.display='block';
+    return;
+  }
+  addToCart(id, detQty, detSelOpts);
+  closeDet();
+}
+
+function switchGal(i, pid){
+  const m=window._detImgs[i];
+  if(!m) return;
+  const main=document.getElementById('gal-main-'+pid);
+  main.innerHTML = m.type==='video'
+    ? `<video src="${m.url}" controls style="width:100%;height:100%;object-fit:cover"></video>`
+    : `<img src="${m.url}" style="width:100%;height:100%;object-fit:cover">`;
+  main.onclick=()=>openLB(m.url,m.type);
+  document.querySelectorAll('.gal-th').forEach((t,j)=>t.classList.toggle('on',j===i));
+}
+
+// ── Lightbox ──────────────────────────────────
+function openLB(url,type){
+  if(!url) return;
+  const img=document.getElementById('lb-img'), vid=document.getElementById('lb-vid');
+  if(type==='video'){ img.style.display='none'; vid.style.display='block'; vid.src=url; vid.play(); }
+  else { vid.style.display='none'; img.style.display='block'; img.src=url; }
+  document.getElementById('lb-overlay').classList.add('open');
+}
+function closeLB(){ document.getElementById('lb-overlay').classList.remove('open'); document.getElementById('lb-vid').pause(); }
+
+// ── Checkout ──────────────────────────────────
+function openCheckout(){
+  if(cart.length===0){ toast('⚠️ سلتك فارغة!'); return; }
+  document.getElementById('co-modal').innerHTML=`
+    <button class="modal-x" onclick="document.getElementById('co-overlay').classList.remove('open')">✕</button>
+    <h2>📦 تأكيد الطلب</h2>
+    <div class="cash-note"><span style="font-size:24px">💵</span><div><b>الدفع كاش عند الاستلام</b><small>لا حاجة لبطاقة</small></div></div>
+    <div class="form-row">
+      <div class="form-g"><label>الاسم الكامل *</label><input id="o-name" placeholder="محمد أبو علي"></div>
+      <div class="form-g"><label>رقم الهاتف *</label><input id="o-phone" type="tel" placeholder="05X-XXX-XXXX" style="direction:ltr;text-align:right"></div>
+    </div>
+    <div class="form-g"><label>موقع السكن / العنوان *</label><textarea id="o-addr" rows="2" placeholder="المدينة، الحي، الشارع..."></textarea></div>
+    <div class="form-g"><label>ملاحظات</label><input id="o-notes" placeholder="أي تعليمات للتوصيل..."></div>
+    <div style="background:var(--soft);border-radius:11px;padding:.9rem;margin:.8rem 0;font-size:13px">
+      <div style="font-weight:700;color:var(--burg);margin-bottom:7px">ملخص الطلب</div>
+      ${cart.map(c=>{
+        const optStr=c.selectedOptions?Object.entries(c.selectedOptions).filter(([,v])=>v).map(([k,v])=>v).join(' · '):'';
+        return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
+          <span>${c.name}${optStr?' <small style=color:var(--muted)>('+optStr+')</small>':''} ×${c.qty}</span>
+          <span style="font-weight:700">${c.price*c.qty} ${CURRENCY}</span></div>`;
+      }).join('')}
+      <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:900;color:var(--burg);margin-top:8px"><span>الإجمالي</span><span>${cartTotal()} ${CURRENCY}</span></div>
+    </div>
+    <button class="btn btn-burg w-full" style="font-size:15px;padding:13px" onclick="submitOrder()">✓ تأكيد وإرسال الطلب</button>`;
+  document.getElementById('co-overlay').classList.add('open');
+}
+
+async function submitOrder(){
+  const name=document.getElementById('o-name').value.trim();
+  const phone=document.getElementById('o-phone').value.trim();
+  const addr=document.getElementById('o-addr').value.trim();
+  const notes=document.getElementById('o-notes').value.trim();
+  for(const [v,l] of [[name,'الاسم'],[phone,'رقم الهاتف'],[addr,'العنوان']]){
+    if(!v){ toast('⚠️ أدخل: '+l); return; }
+  }
+  const btn=document.querySelector('#co-modal .btn-burg');
+  if(btn){ btn.disabled=true; btn.textContent='جاري الإرسال...'; }
+  const order=await placeOrder({name,phone,address:addr,notes});
+  clearCart(); updateCatCounts();
+  document.getElementById('co-modal').innerHTML=`
+    <div class="success-box">
+      <div style="font-size:64px;margin-bottom:.8rem">🎉</div>
+      <h2 style="font-size:22px;font-weight:900;color:var(--burg);margin-bottom:7px">تم إرسال طلبك!</h2>
+      <p style="color:var(--muted);margin-bottom:1.1rem;font-size:14px">سنتواصل معك على رقم الهاتف لتأكيد التوصيل</p>
+      <div class="order-details">
+        <div class="od-row"><span class="od-label">رقم الطلب</span><span class="od-val">${order.id}</span></div>
+        <div class="od-row"><span class="od-label">الاسم</span><span class="od-val">${order.name}</span></div>
+        <div class="od-row"><span class="od-label">الهاتف</span><span class="od-val" style="direction:ltr">${order.phone}</span></div>
+        <div class="od-row"><span class="od-label">العنوان</span><span class="od-val">${order.address}</span></div>
+        <div class="od-row"><span class="od-label">الإجمالي</span><span class="od-val" style="font-size:17px">${order.total} ${CURRENCY}</span></div>
+      </div>
+      <a href="track.html?id=${order.id}" class="btn btn-burg" style="margin-bottom:10px;display:inline-flex">📦 تتبع طلبك</a><br>
+      <button class="btn btn-out btn-sm" style="margin-top:8px" onclick="document.getElementById('co-overlay').classList.remove('open')">رجوع للمتجر</button>
+    </div>`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الإدارة — Mug Cup</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.opt-tag{display:inline-flex;align-items:center;gap:4px;background:var(--soft);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--burg);font-weight:600;border:1px solid var(--border)}
+.opt-tag button{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;line-height:1;padding:0}
+.upload-prog{height:4px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden;display:none}
+.upload-prog div{height:100%;background:var(--burg);transition:width .3s}
+</style>
+</head>
+<body>
+<script>if(sessionStorage.getItem('mc_admin')!=='1') location.href='login.html';</script>
+
+<nav>
+  <div style="display:flex;align-items:center;gap:8px">
+    <a class="nav-logo-btn" href="index.html"><img src="logo.png" alt="Mug Cup"></a>
+    <span style="background:rgba(232,213,183,.15);color:var(--cream);padding:3px 12px;border-radius:20px;font-size:12px;font-weight:700">الإدارة</span>
+  </div>
+  <div class="nav-actions">
+    <button class="nav-btn" style="font-size:13px" onclick="logout()">خروج</button>
+  </div>
+</nav>
+
+<div class="admin-wrap">
+  <div class="admin-side">
+    <div style="color:rgba(232,213,183,.4);font-size:10px;font-weight:700;padding:5px 12px;margin-bottom:5px">القائمة</div>
+    <div class="admin-nav">
+      <a href="#" class="on" id="nav-stats"    onclick="sw('stats',this)">📊 الإحصائيات</a>
+      <a href="#" id="nav-products" onclick="sw('products',this)">🛍 المنتجات</a>
+      <a href="#" id="nav-orders"   onclick="sw('orders',this)">📦 الطلبيات <span id="new-badge" style="background:#f59e0b;color:#fff;border-radius:50%;width:17px;height:17px;font-size:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;vertical-align:middle;margin-right:4px"></span></a>
+    </div>
+  </div>
+
+  <div class="admin-main">
+
+    <!-- STATS -->
+    <div class="pg on" id="pg-stats">
+      <div class="fb-note" id="fb-status">
+        <b>⏳ جاري الاتصال بـ Firebase...</b>
+        أضف بيانات Firebase في ملف js/store.js لتفعيل المزامنة بين الأجهزة
+      </div>
+      <div class="stat-cards" id="stat-cards"></div>
+      <div class="admin-card"><h3>📦 آخر الطلبيات</h3><div id="recent-orders"></div></div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="pg" id="pg-products">
+      <div class="admin-card" style="background:var(--soft)">
+        <h3>➕ إضافة منتج جديد</h3>
+        <div class="form-r">
+          <div class="fg"><label>اسم المنتج *</label><input id="ap-name" placeholder="اسم المنتج"></div>
+          <div class="fg"><label>السعر (₪) *</label><input id="ap-price" type="number" min="1" placeholder="0"></div>
+        </div>
+        <div class="form-r">
+          <div class="fg">
+            <label>الفئة *</label>
+            <select id="ap-cat"><option value="stickers">🏷 ملصقات</option><option value="mugs">☕ كاسات</option></select>
+          </div>
+          <div class="fg"><label>إيموجي</label><input id="ap-emoji" placeholder="☕" maxlength="4" style="font-size:18px;text-align:center"></div>
+        </div>
+        <div class="fg"><label>الوصف</label><textarea id="ap-desc" rows="2" placeholder="وصف المنتج..."></textarea></div>
+
+        <!-- Colors -->
+        <div class="fg">
+          <label>الألوان المتاحة</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px" id="ap-colors"></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="color" id="ap-chex" value="#551119" style="width:36px;height:32px;border-radius:6px;border:1.5px solid var(--border);cursor:pointer;padding:2px">
+            <input type="text" id="ap-cname" placeholder="اسم اللون (مثلاً: أبيض)" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;font-size:12px;outline:none">
+            <button onclick="addAPColor()" class="btn btn-burg btn-sm">+</button>
+          </div>
+        </div>
+
+        <!-- Custom options (size, material, etc.) -->
+        <div class="fg">
+          <label>خيارات إضافية (مثلاً: الحجم، الخامة)</label>
+          <div style="flex-wrap:wrap;gap:6px;margin-bottom:6px" id="ap-opts-list"></div>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="ap-opt-label" placeholder="اسم الخيار (مثلاً: الحجم)" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;font-size:12px;outline:none">
+            <input type="text" id="ap-opt-vals" placeholder="القيم مفصولة بفاصلة (S,M,L)" style="flex:1.5;padding:7px;border-radius:8px;border:1.5px solid var(--border);font-family:inherit;font-size:12px;outline:none">
+            <button onclick="addAPOpt()" class="btn btn-burg btn-sm">+</button>
+          </div>
+        </div>
+
+        <!-- Media -->
+        <div class="fg">
+          <label>صور وفيديوهات المنتج</label>
+          <div class="media-zone" id="ap-zone"
+            onclick="document.getElementById('ap-files').click()"
+            ondragover="event.preventDefault();this.classList.add('drag')"
+            ondragleave="this.classList.remove('drag')"
+            ondrop="event.preventDefault();this.classList.remove('drag');handleAPFiles(event.dataTransfer.files)">
+            <div style="font-size:24px;margin-bottom:4px">📂</div>
+            <div style="font-size:12px;font-weight:700;color:var(--burg)">اسحب أو اضغط لرفع صور/فيديو</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">JPG · PNG · WEBP · MP4</div>
+            <div class="upload-prog" id="ap-prog"><div id="ap-prog-bar" style="width:0%"></div></div>
+            <input type="file" id="ap-files" multiple accept="image/*,video/*" style="display:none" onchange="handleAPFiles(this.files)">
+          </div>
+          <div class="mm-grid" id="ap-preview"></div>
+        </div>
+        <button class="btn btn-burg" id="ap-submit" onclick="doAdd()">➕ إضافة المنتج</button>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab on" onclick="switchPTab('stickers',this)">🏷 الملصقات</button>
+        <button class="tab" onclick="switchPTab('mugs',this)">☕ الكاسات</button>
+      </div>
+      <div id="prod-list"></div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="pg" id="pg-orders">
+      <div class="admin-card"><h3>📦 جميع الطلبيات</h3><div id="orders-list"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="overlay" id="edit-ov">
+  <div class="modal" style="max-width:520px;padding:1.8rem;position:relative;max-height:90vh;overflow-y:auto" id="edit-modal"></div>
+</div>
+
+<script src="js/store.js"></script>
+<script>
+let apFiles=[], apColors=[], apOpts=[], curPTab='stickers';
+let editColors=[], editOpts=[], editFiles=[], editId=null;
+
+renderStats(); renderProdTab('stickers'); renderOrders(); refreshBadge();
+document.getElementById('edit-ov').onclick=e=>{if(e.target.id==='edit-ov')document.getElementById('edit-ov').classList.remove('open')};
+
+// Show Firebase status
+setTimeout(()=>{
+  const note=document.getElementById('fb-status');
+  if(firebaseReady){ note.style.background='#d1fae5'; note.style.borderColor='#6ee7b7'; note.innerHTML='<b>✅ Firebase متصل — البيانات تُزامن على كل الأجهزة</b>'; }
+  else { note.innerHTML='<b>⚠️ Firebase غير متصل</b> أضف بياناتك في js/store.js عشان تشتغل على كل الأجهزة'; }
+},2000);
+
+function logout(){ sessionStorage.removeItem('mc_admin'); location.href='login.html'; }
+
+function sw(pg,el){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.admin-nav a').forEach(a=>a.classList.remove('on'));
+  document.getElementById('pg-'+pg).classList.add('on'); el.classList.add('on');
+  if(pg==='products') renderProdTab(curPTab);
+  if(pg==='orders') renderOrders();
+  if(pg==='stats') renderStats();
+}
+
+function renderStats(){
+  const newO=orders.filter(o=>o.status==='جديد').length;
+  const rev=orders.reduce((s,o)=>s+o.total,0);
+  document.getElementById('stat-cards').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${products.length}</div><div class="stat-lbl">منتج</div></div>
+    <div class="stat-card"><div class="stat-num">${orders.length}</div><div class="stat-lbl">طلب كلي</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#f59e0b">${newO}</div><div class="stat-lbl">جديد</div></div>
+    <div class="stat-card"><div class="stat-num">${rev} ₪</div><div class="stat-lbl">المبيعات</div></div>`;
+  const rc=document.getElementById('recent-orders');
+  if(!orders.length){rc.innerHTML='<div class="empty-state"><div class="ei">📦</div><div>لا يوجد طلبيات بعد</div></div>';return;}
+  rc.innerHTML=`<table class="orders-table"><thead><tr><th>رقم الطلب</th><th>الاسم</th><th>الهاتف</th><th>الإجمالي</th><th>الحالة</th></tr></thead><tbody>
+    ${orders.slice(0,6).map(o=>`<tr>
+      <td style="font-weight:700;color:var(--burg)">${o.id}</td>
+      <td>${o.name}</td><td style="direction:ltr">${o.phone}</td>
+      <td style="font-weight:700">${o.total} ₪</td>
+      <td><span class="o-badge ${statusClass(o.status)}">${o.status}</span></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function statusClass(s){ return s==='جديد'?'o-new':s==='قيد التوصيل'?'o-prog':s==='مكتمل'?'o-done':'o-cancel'; }
+
+// ── COLORS ─────────────────────────────────────
+function addAPColor(){
+  const hex=document.getElementById('ap-chex').value;
+  const name=document.getElementById('ap-cname').value.trim()||hex;
+  if(!apColors.find(c=>c.hex===hex)) apColors.push({hex,name});
+  document.getElementById('ap-cname').value=''; renderAPColors();
+}
+function renderAPColors(){
+  document.getElementById('ap-colors').innerHTML=apColors.map((c,i)=>`
+    <div class="opt-tag">
+      <div style="width:14px;height:14px;border-radius:50%;background:${c.hex};border:1px solid var(--border);flex-shrink:0"></div>
+      ${c.name}
+      <button onclick="apColors.splice(${i},1);renderAPColors()">×</button>
+    </div>`).join('');
+}
+
+// ── OPTIONS ────────────────────────────────────
+function addAPOpt(){
+  const label=document.getElementById('ap-opt-label').value.trim();
+  const vals=document.getElementById('ap-opt-vals').value.trim();
+  if(!label||!vals){ toast('أدخل اسم الخيار والقيم'); return; }
+  const values=vals.split(',').map(v=>v.trim()).filter(Boolean);
+  if(!values.length) return;
+  apOpts.push({label,values});
+  document.getElementById('ap-opt-label').value='';
+  document.getElementById('ap-opt-vals').value='';
+  renderAPOpts();
+}
+function renderAPOpts(){
+  document.getElementById('ap-opts-list').innerHTML=apOpts.map((o,i)=>`
+    <div class="opt-tag" style="margin-bottom:4px">
+      <b>${o.label}:</b> ${o.values.join(', ')}
+      <button onclick="apOpts.splice(${i},1);renderAPOpts()">×</button>
+    </div>`).join('');
+}
+
+// ── FILES ──────────────────────────────────────
+async function handleAPFiles(files){
+  const prog=document.getElementById('ap-prog');
+  const bar=document.getElementById('ap-prog-bar');
+  prog.style.display='block';
+  const arr=[...files].filter(f=>f.type.startsWith('image/')||f.type.startsWith('video/'));
+  for(let i=0;i<arr.length;i++){
+    const f=arr[i];
+    bar.style.width=Math.round((i/arr.length)*80)+'%';
+    const tempUrl=URL.createObjectURL(f);
+    const type=f.type.startsWith('video/')?'video':'image';
+    apFiles.push({file:f, tempUrl, type, uploaded:false});
+  }
+  bar.style.width='100%';
+  setTimeout(()=>prog.style.display='none',600);
+  renderAPPreview();
+}
+function renderAPPreview(){
+  document.getElementById('ap-preview').innerHTML=apFiles.map((m,i)=>`
+    <div class="mm">
+      ${m.type==='image'?`<img src="${m.tempUrl}">`:`<div style="width:100%;height:100%;background:var(--burg3);display:flex;align-items:center;justify-content:center;color:var(--cream);font-size:18px">▶</div>`}
+      <button class="xm" onclick="apFiles.splice(${i},1);renderAPPreview()">✕</button>
+    </div>`).join('');
+}
+
+// ── ADD PRODUCT ────────────────────────────────
+async function doAdd(){
+  const name=document.getElementById('ap-name').value.trim();
+  const price=parseFloat(document.getElementById('ap-price').value);
+  const cat=document.getElementById('ap-cat').value;
+  const emoji=document.getElementById('ap-emoji').value.trim()||'📦';
+  const desc=document.getElementById('ap-desc').value.trim();
+  if(!name){ toast('⚠️ أدخل اسم المنتج'); return; }
+  if(!price||price<1){ toast('⚠️ أدخل سعراً صحيحاً'); return; }
+
+  const btn=document.getElementById('ap-submit');
+  btn.disabled=true; btn.textContent='جاري الإضافة...';
+
+  const prodId=nextId();
+  // Upload images
+  const images=[];
+  for(const mf of apFiles){
+    if(firebaseReady){
+      try{
+        const res=await uploadImageToFirebase(mf.file, prodId);
+        if(res) images.push(res);
+      }catch(e){ images.push({url:mf.tempUrl,type:mf.type}); }
+    } else {
+      images.push({url:mf.tempUrl, type:mf.type});
+    }
+  }
+
+  await addProduct({id:prodId, cat, name, price, desc, emoji, colors:apColors, options:apOpts, images});
+
+  // Reset
+  ['ap-name','ap-price','ap-emoji','ap-desc'].forEach(i=>document.getElementById(i).value='');
+  apFiles=[]; apColors=[]; apOpts=[];
+  renderAPPreview(); renderAPColors(); renderAPOpts();
+  btn.disabled=false; btn.textContent='➕ إضافة المنتج';
+  renderProdTab(cat); renderStats();
+  toast('✓ تمت إضافة: '+name);
+}
+
+// ── PRODUCT TAB ────────────────────────────────
+function switchPTab(cat,el){
+  curPTab=cat;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  renderProdTab(cat);
+}
+function renderProdTab(cat){
+  const items=products.filter(p=>p.cat===cat);
+  const el=document.getElementById('prod-list');
+  if(!items.length){el.innerHTML='<div class="empty-state"><div class="ei">📦</div><div>لا يوجد منتجات — أضف من الأعلى</div></div>';return;}
+  el.innerHTML=`<div class="prod-admin-grid">${items.map(p=>`
+    <div class="pac">
+      <div class="pac-img">
+        ${p.images&&p.images[0]
+          ? p.images[0].type==='video'
+            ? `<div style="width:100%;height:100%;background:var(--burg3);display:flex;align-items:center;justify-content:center;color:var(--cream);font-size:28px">▶</div>`
+            : `<img src="${p.images[0].url}" alt="${p.name}">`
+          : `<div class="ph">${p.emoji}</div>`}
+        <div style="position:absolute;top:4px;right:4px;background:var(--burg);color:var(--cream);font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700">${(p.images||[]).length} صورة</div>
+      </div>
+      <div class="pac-body">
+        <div class="pac-name">${p.name}</div>
+        <div class="pac-price">${p.price} ₪ ${p.colors&&p.colors.length?'· '+p.colors.length+' لون':''}</div>
+        <div class="pac-actions">
+          <button class="btn btn-burg btn-sm" style="flex:1;justify-content:center;font-size:11px" onclick="openEdit('${p.id}')">✏️ تعديل</button>
+          <button style="background:#fce8e8;color:#cc2222;border:none;border-radius:7px;padding:6px 9px;cursor:pointer;font-size:12px" onclick="doDel('${p.id}')">🗑</button>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+async function doDel(id){
+  const p=products.find(x=>x.id===id);
+  if(!p||!confirm('حذف "'+p.name+'"؟')) return;
+  await deleteProduct(id);
+  renderProdTab(curPTab); renderStats(); toast('🗑 تم الحذف');
+}
+
+// ── EDIT ───────────────────────────────────────
+async function openEdit(id){
+  editId=id;
+  const p=products.find(x=>x.id===id);
+  editColors=p.colors?[...p.colors]:[];
+  editOpts=p.options?JSON.parse(JSON.stringify(p.options)):[];
+  editFiles=p.images?[...p.images]:[];
+
+  document.getElementById('edit-modal').innerHTML=`
+    <button class="modal-x" onclick="closeEdit()">✕</button>
+    <div style="font-size:16px;font-weight:900;color:var(--burg);margin-bottom:1rem;padding-bottom:8px;border-bottom:1px solid var(--border)">✏️ تعديل: ${p.name}</div>
+    <div class="fg"><label>الاسم</label><input id="e-name" value="${p.name}"></div>
+    <div class="form-r">
+      <div class="fg"><label>السعر</label><input id="e-price" type="number" value="${p.price}"></div>
+      <div class="fg"><label>الفئة</label>
+        <select id="e-cat">
+          <option value="stickers"${p.cat==='stickers'?' selected':''}>🏷 ملصقات</option>
+          <option value="mugs"${p.cat==='mugs'?' selected':''}>☕ كاسات</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label>الوصف</label><textarea id="e-desc" rows="2">${p.desc||''}</textarea></div>
+    <div class="fg">
+      <label>الألوان</label>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px" id="e-colors"></div>
+      <div style="display:flex;gap:5px">
+        <input type="color" id="e-chex" value="#551119" style="width:34px;height:30px;border-radius:5px;border:1px solid var(--border);cursor:pointer;padding:2px">
+        <input type="text" id="e-cname" placeholder="اسم اللون" style="flex:1;padding:6px;border-radius:7px;border:1.5px solid var(--border);font-family:inherit;font-size:12px;outline:none">
+        <button onclick="addEditColor()" class="btn btn-burg btn-sm">+</button>
+      </div>
+    </div>
+    <div class="fg">
+      <label>خيارات إضافية</label>
+      <div style="flex-wrap:wrap;gap:5px;margin-bottom:5px" id="e-opts-list"></div>
+      <div style="display:flex;gap:5px">
+        <input type="text" id="e-opt-label" placeholder="اسم الخيار" style="flex:1;padding:6px;border-radius:7px;border:1.5px solid var(--border);font-family:inherit;font-size:12px;outline:none">
+        <input type="text" id="e-opt-vals" placeholder="القيم بفاصلة" style="flex:1.5;padding:6px;border-radius:7px;border:1.5px solid var(--border);font-family:inherit;font-size:12px;outline:none">
+        <button onclick="addEditOpt()" class="btn btn-burg btn-sm">+</button>
+      </div>
+    </div>
+    <div class="fg">
+      <label>الصور الحالية</label>
+      <div class="mm-grid" id="e-imgs"></div>
+      <div class="media-zone" style="padding:.9rem;margin-top:6px" onclick="document.getElementById('e-files').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')"
+        ondrop="event.preventDefault();this.classList.remove('drag');handleEditFiles(event.dataTransfer.files)">
+        <div style="font-size:12px;font-weight:700;color:var(--burg)">+ إضافة صور/فيديو</div>
+        <input type="file" id="e-files" multiple accept="image/*,video/*" style="display:none" onchange="handleEditFiles(this.files)">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-burg" id="e-save" style="flex:1;justify-content:center" onclick="saveEdit()">💾 حفظ</button>
+      <button class="btn btn-out" style="flex:1;justify-content:center" onclick="closeEdit()">إلغاء</button>
+    </div>`;
+  renderEditColors(); renderEditOpts(); renderEditImgs();
+  document.getElementById('edit-ov').classList.add('open');
+}
+function closeEdit(){ document.getElementById('edit-ov').classList.remove('open'); }
+
+function addEditColor(){
+  const hex=document.getElementById('e-chex').value;
+  const name=document.getElementById('e-cname').value.trim()||hex;
+  if(!editColors.find(c=>c.hex===hex)) editColors.push({hex,name});
+  document.getElementById('e-cname').value=''; renderEditColors();
+}
+function renderEditColors(){
+  const el=document.getElementById('e-colors'); if(!el) return;
+  el.innerHTML=editColors.map((c,i)=>`
+    <div class="opt-tag">
+      <div style="width:14px;height:14px;border-radius:50%;background:${c.hex};border:1px solid var(--border)"></div>
+      ${c.name}<button onclick="editColors.splice(${i},1);renderEditColors()">×</button>
+    </div>`).join('');
+}
+function addEditOpt(){
+  const label=document.getElementById('e-opt-label').value.trim();
+  const vals=document.getElementById('e-opt-vals').value.trim();
+  if(!label||!vals) return;
+  const values=vals.split(',').map(v=>v.trim()).filter(Boolean);
+  editOpts.push({label,values});
+  document.getElementById('e-opt-label').value=''; document.getElementById('e-opt-vals').value='';
+  renderEditOpts();
+}
+function renderEditOpts(){
+  const el=document.getElementById('e-opts-list'); if(!el) return;
+  el.innerHTML=editOpts.map((o,i)=>`
+    <div class="opt-tag" style="margin-bottom:3px"><b>${o.label}:</b> ${o.values.join(', ')}
+      <button onclick="editOpts.splice(${i},1);renderEditOpts()">×</button>
+    </div>`).join('');
+}
+async function handleEditFiles(files){
+  for(const f of [...files]){
+    if(!f.type.startsWith('image/')&&!f.type.startsWith('video/')) continue;
+    editFiles.push({url:URL.createObjectURL(f),type:f.type.startsWith('video/')?'video':'image',file:f,isNew:true});
+  }
+  renderEditImgs();
+}
+function renderEditImgs(){
+  const el=document.getElementById('e-imgs'); if(!el) return;
+  el.innerHTML=editFiles.map((m,i)=>`
+    <div class="mm">
+      ${m.type==='image'?`<img src="${m.url}">`:`<div style="width:100%;height:100%;background:var(--burg3);display:flex;align-items:center;justify-content:center;color:var(--cream);font-size:18px">▶</div>`}
+      <button class="xm" onclick="editFiles.splice(${i},1);renderEditImgs()">✕</button>
+    </div>`).join('');
+}
+async function saveEdit(){
+  const name=document.getElementById('e-name').value.trim();
+  const price=parseFloat(document.getElementById('e-price').value);
+  const cat=document.getElementById('e-cat').value;
+  const desc=document.getElementById('e-desc').value.trim();
+  if(!name||!price){ toast('⚠️ تحقق من البيانات'); return; }
+  const btn=document.getElementById('e-save');
+  btn.disabled=true; btn.textContent='جاري الحفظ...';
+
+  // Upload new files
+  const images=[];
+  for(const m of editFiles){
+    if(m.isNew && m.file && firebaseReady){
+      const res=await uploadImageToFirebase(m.file, editId);
+      if(res){images.push(res); continue;}
+    }
+    images.push({url:m.url,type:m.type});
+  }
+
+  await updateProduct(editId,{name,price,cat,desc,colors:editColors,options:editOpts,images});
+  closeEdit(); renderProdTab(curPTab); renderStats(); toast('✓ تم الحفظ');
+}
+
+// ── ORDERS ─────────────────────────────────────
+function renderOrders(){
+  const el=document.getElementById('orders-list');
+  if(!orders.length){el.innerHTML='<div class="empty-state"><div class="ei">📦</div><div>لا يوجد طلبيات بعد</div></div>';return;}
+  el.innerHTML=orders.map(o=>`
+    <div style="border:1px solid var(--border);border-radius:11px;padding:1rem;margin-bottom:9px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;margin-bottom:8px">
+        <div>
+          <div style="font-size:14px;font-weight:900;color:var(--burg)">${o.id}</div>
+          <div style="font-size:11px;color:var(--muted)">${o.date||''} ${o.time||''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <select class="status-sel" onchange="changeStatus('${o.id}','${o._fbId||''}',this.value)">
+            ${['جديد','قيد التوصيل','مكتمل','ملغي'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
+          </select>
+          <span class="o-badge ${statusClass(o.status)}">${o.status}</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px;font-size:12px;background:var(--soft);border-radius:9px;padding:9px;margin-bottom:7px">
+        <div><span style="color:var(--muted)">الاسم: </span><b>${o.name}</b></div>
+        <div><span style="color:var(--muted)">الهاتف: </span><b style="direction:ltr;unicode-bidi:embed">${o.phone}</b></div>
+        <div style="grid-column:1/-1"><span style="color:var(--muted)">العنوان: </span><b>${o.address}</b></div>
+        ${o.notes?`<div style="grid-column:1/-1"><span style="color:var(--muted)">ملاحظات: </span><b>${o.notes}</b></div>`:''}
+      </div>
+      <div style="font-size:12px">
+        ${(o.items||[]).map(i=>{
+          const opts=i.selectedOptions?Object.values(i.selectedOptions).filter(Boolean).join(' · '):'';
+          return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)">
+            <span>${i.name}${opts?' <small style=color:var(--muted)>('+opts+')</small>':''} ×${i.qty}</span>
+            <span style="font-weight:700">${i.price*i.qty} ₪</span></div>`;
+        }).join('')}
+        <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:900;color:var(--burg);margin-top:7px"><span>الإجمالي</span><span>${o.total} ₪</span></div>
+      </div>
+    </div>`).join('');
+}
+
+async function changeStatus(id, fbId, status){
+  const o=orders.find(x=>x.id===id);
+  if(o){ o.status=status; saveLocal(); if(fbId) await updateOrderStatusFirebase(fbId,status); }
+  refreshBadge(); renderStats(); toast('✓ تم تحديث الحالة');
+}
+
+function refreshBadge(){
+  const n=orders.filter(o=>o.status==='جديد').length;
+  const b=document.getElementById('new-badge');
+  if(b) b.textContent=n||'';
+}
+</script>
+</body>
+</html>

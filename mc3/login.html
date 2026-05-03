@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>دخول الإدارة — Mug Cup</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-box">
+    <img src="logo.png" style="height:80px;object-fit:contain;margin-bottom:1.2rem">
+    <h2 style="font-size:19px;font-weight:900;color:var(--burg);margin-bottom:1.3rem">لوحة الإدارة</h2>
+    <div class="fg" style="text-align:right"><label>اسم المستخدم</label><input id="u" placeholder="admin" autocomplete="username"></div>
+    <div class="fg" style="text-align:right"><label>كلمة المرور</label><input id="p" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
+    <div id="err" style="color:#cc2222;font-size:12px;margin-bottom:8px;display:none">❌ بيانات خاطئة</div>
+    <button class="btn btn-burg w-full" onclick="login()" style="font-size:15px;padding:12px;margin-top:4px">دخول ←</button>
+    <div style="margin-top:1rem;font-size:12px;color:var(--muted);border-top:1px solid var(--border);padding-top:1rem">
+      افتراضي: <b>admin</b> / <b>mugcup2024</b>
+    </div>
+    <a href="index.html" style="display:block;margin-top:.8rem;color:var(--muted);font-size:12px;text-decoration:none">← رجوع للمتجر</a>
+  </div>
+</div>
+<script>
+if(sessionStorage.getItem('mc_admin')==='1') location.href='admin.html';
+function login(){
+  const pass=localStorage.getItem('mc_admin_pass')||'mugcup2024';
+  if(document.getElementById('u').value.trim()==='admin'&&document.getElementById('p').value===pass){
+    sessionStorage.setItem('mc_admin','1'); location.href='admin.html';
+  } else {
+    document.getElementById('err').style.display='block';
+    document.getElementById('p').value='';
+  }
+}
+</script>
+</body>
+</html>
