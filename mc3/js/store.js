@@ -8,13 +8,48 @@
 // Project Settings → General → Your apps → Add Web App
 // انسخ الـ config هنا:
 const FIREBASE_CONFIG = {
-  apiKey:            "PASTE_YOUR_API_KEY_HERE",
-  authDomain:        "PASTE.firebaseapp.com",
-  projectId:         "PASTE_PROJECT_ID",
-  storageBucket:     "PASTE.appspot.com",
-  messagingSenderId: "PASTE_SENDER_ID",
-  appId:             "PASTE_APP_ID"
+  apiKey:            "AIzaSyAyRq36hvyRIdOW2w6ljV5nmIJTbRW6UsA",
+  authDomain:        "mugcup-5e23b.firebaseapp.com",
+  projectId:         "mugcup-5e23b",
+  storageBucket:     "mugcup-5e23b.firebasestorage.app",
+  messagingSenderId: "702851093892",
+  appId:             "1:702851093892:web:500b7f9604ebbf6dbc39d1",
+  measurementId:     "G-GR9G5RWXY2"
 };
+
+
+// ─── CLOUDINARY CONFIG (رفع الصور المجاني) ──────
+const CLOUDINARY = {
+  cloudName:  "dkm6x9pbm",
+  apiKey:     "796683368849748",
+  apiSecret:  "PHDVd6fs_g8x72Qup9QXo5I1ZQg",
+  uploadPreset: "mugcup_unsigned"
+};
+
+// رفع صورة على Cloudinary
+async function uploadToCloudinary(file){
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY.uploadPreset);
+  formData.append('cloud_name', CLOUDINARY.cloudName);
+  try {
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/auto/upload`,
+      { method: 'POST', body: formData }
+    );
+    const data = await res.json();
+    if(data.secure_url){
+      return {
+        url:  data.secure_url,
+        type: data.resource_type === 'video' ? 'video' : 'image'
+      };
+    }
+    return null;
+  } catch(e){
+    console.error('Cloudinary upload error:', e);
+    return null;
+  }
+}
 
 // ─── CONSTANTS ───────────────────────────────────
 const CURRENCY = '₪';
@@ -33,7 +68,7 @@ let db = null;
 let storage = null;
 let firebaseReady = false;
 
-let products  = JSON.parse(localStorage.getItem('mc3_products') || JSON.stringify(DEFAULT_PRODUCTS));
+let products  = JSON.parse(localStorage.getItem('mc3_products') || '[]');
 let cart      = JSON.parse(localStorage.getItem('mc3_cart')     || '[]');
 let orders    = JSON.parse(localStorage.getItem('mc3_orders')   || '[]');
 let favorites = JSON.parse(localStorage.getItem('mc3_favs')     || '[]');
@@ -82,14 +117,17 @@ async function initFirebase(){
 // ─── PRODUCTS (Firebase) ─────────────────────────
 async function loadProductsFromFirebase(){
   try {
-    const { collection, getDocs } = window._fb;
-    const snap = await getDocs(collection(db, 'products'));
-    if(!snap.empty){
+    const { collection, onSnapshot, query, orderBy } = window._fb;
+    // Real-time listener for products - updates instantly on all devices
+    const q = query(collection(db, 'products'));
+    onSnapshot(q, snap => {
       products = snap.docs.map(d => ({...d.data(), id: d.id}));
       saveLocal();
       if(typeof renderProducts==='function') renderProducts();
       if(typeof updateCatCounts==='function') updateCatCounts();
-    }
+      if(typeof renderProdTab==='function') renderProdTab(typeof curPTab!=='undefined'?curPTab:'stickers');
+      if(typeof renderStats==='function') renderStats();
+    });
   } catch(e){ console.error('loadProducts error:', e); }
 }
 
@@ -108,13 +146,8 @@ async function deleteProductFromFirebase(id){
 
 // ─── IMAGE UPLOAD (Firebase Storage) ────────────
 async function uploadImageToFirebase(file, productId){
-  if(!firebaseReady) return null;
-  const { ref, uploadBytes, getDownloadURL } = window._fb;
-  const fileName = `products/${productId}/${Date.now()}_${file.name}`;
-  const storageRef = ref(storage, fileName);
-  const snap = await uploadBytes(storageRef, file);
-  const url = await getDownloadURL(snap.ref);
-  return { url, path: fileName, type: file.type.startsWith('video/') ? 'video' : 'image' };
+  // استخدام Cloudinary بدل Firebase Storage (مجاني 100%)
+  return await uploadToCloudinary(file);
 }
 
 // ─── ORDERS (Firebase) ───────────────────────────
