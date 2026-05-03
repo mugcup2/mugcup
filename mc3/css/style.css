@@ -236,7 +236,26 @@ footer strong{color:var(--cream)}
   .admin-wrap{grid-template-columns:1fr}
   .admin-side{display:none}
   .form-row,.form-r{grid-template-columns:1fr}
-  .hero-title{font-size:28px}
-  .cat-strip{gap:.6rem;padding:.8rem 1rem}
-  .cat-btn{width:130px}
+  .hero-title{font-size:26px}
+  .hero{padding:1.8rem 1rem 0}
+  .cat-strip{gap:.5rem;padding:.7rem .8rem}
+  .cat-btn{width:auto;flex:1;min-width:0;padding:.65rem .5rem;font-size:13px}
+  .cat-btn .cb-icon{font-size:20px}
+  /* 2 columns on mobile */
+  .prod-grid{grid-template-columns:repeat(2,1fr);gap:.7rem}
+  .prod-section{padding:1rem .8rem}
+  .search-wrap{width:100%}
+  .section-bar{padding:0 .2rem}
+  .prod-name{font-size:13px}
+  .prod-desc{font-size:10px;min-height:24px}
+  .prod-price{font-size:15px}
+  .prod-body{padding:9px}
+  .add-btn{width:30px;height:30px;font-size:18px}
+  /* Better hero on mobile */
+  .hero-tagline{font-size:10px;letter-spacing:2px}
+  .hero-divider{margin:.5rem auto}
+}
+@media(max-width:380px){
+  .prod-grid{grid-template-columns:repeat(2,1fr);gap:.5rem}
+  .cat-btn{font-size:11px}
 }
