@@ -237,7 +237,7 @@ footer strong{color:var(--cream)}
   .det-grid{grid-template-columns:1fr}
   .det-gallery{border-radius:16px 16px 0 0;padding:.8rem}
   .gal-main{width:100%;height:260px;aspect-ratio:unset;border-radius:10px}
-  .gal-main img,.gal-main video{width:100%;height:100%;object-fit:cover}
+  .gal-main img,.gal-main video{width:100%;height:100%;object-fit:contain;background:var(--soft)}
   .gal-th{width:48px;height:48px}
   .det-info{padding:.9rem}
   .det-info h2{font-size:16px}
