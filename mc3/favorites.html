@@ -42,7 +42,21 @@
 <script>
 
 document.getElementById('cart-ph').innerHTML = buildCartHTML();
-updateBadges(); renderFavorites();
+updateBadges();
+
+// Wait for Firebase to load products first, then render
+function waitAndRender(){
+  if(firebaseReady){
+    // Firebase is ready, wait for products to load via onSnapshot
+    setTimeout(renderFavorites, 1500);
+  } else {
+    // Use local products
+    renderFavorites();
+    // Also try again after Firebase loads
+    setTimeout(renderFavorites, 2000);
+  }
+}
+waitAndRender();
 
 async function renderFavorites(){
   const favs=products.filter(p=>favorites.includes(p.id));
@@ -50,25 +64,27 @@ async function renderFavorites(){
   const grid=document.getElementById('fav-grid');
   if(favs.length===0){grid.innerHTML='';document.getElementById('fav-empty').style.display='block';return;}
   document.getElementById('fav-empty').style.display='none';
-  grid.innerHTML=favs.map(p=>`
-    <div class="prod-card">
+  grid.innerHTML=favs.map(p=>{
+    const img = p.images&&p.images[0]
+      ? p.images[0].type==='video'
+        ? `<video src="${p.images[0].url}" muted playsinline style="width:100%;height:100%;object-fit:cover"></video>`
+        : `<img src="${p.images[0].url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">`
+      : `<div class="ph">${p.emoji}</div>`;
+    return `<div class="prod-card">
       <div class="prod-img" id="pimg-${p.id}">
-        <div class="ph">${p.emoji}</div>
-        <button class="fav-btn on" data-id="${p.id}" onclick="toggleFav(${p.id});renderFavorites()">❤️</button>
+        ${img}
+        <button class="fav-btn on" data-id="${p.id}" onclick="toggleFav('${p.id}');renderFavorites()">❤️</button>
       </div>
       <div class="prod-body">
         <div class="prod-name">${p.name}</div>
         <div class="prod-desc">${p.desc}</div>
         <div class="prod-foot">
           <div class="prod-price">${p.price} ${CURRENCY}</div>
-          <button class="add-btn" onclick="addToCart(${p.id})">+</button>
+          <button class="add-btn" onclick="addToCart('${p.id}')">+</button>
         </div>
       </div>
-    </div>`).join('');
-  for(const p of favs){
-    const c=document.getElementById('pimg-'+p.id);
-    if(c) await renderFirstMedia(p,c);
-  }
+    </div>`;
+  }).join('');
 }
 </script>
 </body>
