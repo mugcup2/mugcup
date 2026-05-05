@@ -184,7 +184,7 @@ footer{background:var(--burg);color:rgba(232,213,183,.5);text-align:center;paddi
 footer strong{color:var(--cream)}
 
 /* ADMIN */
-.admin-wrap{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - 62px)}
+.admin-wrap{display:grid;grid-template-columns:180px 1fr;min-height:calc(100vh - 62px)}
 .admin-side{background:var(--burg3);padding:1.2rem .8rem}
 .admin-nav a{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:9px;color:rgba(232,213,183,.6);font-size:13px;font-weight:600;text-decoration:none;transition:.2s;margin-bottom:2px}
 .admin-nav a:hover,.admin-nav a.on{background:rgba(232,213,183,.11);color:var(--cream)}
@@ -240,7 +240,7 @@ footer strong{color:var(--cream)}
   .det-price{font-size:20px}
   .modal-x{top:8px;left:8px;width:28px;height:28px;font-size:14px}
   .admin-wrap{grid-template-columns:1fr}
-  .admin-side{display:none}
+  .admin-side{display:block}
   .form-row,.form-r{grid-template-columns:1fr}
   .hero-title{font-size:26px}
   .hero{padding:1.8rem 1rem 0}
@@ -299,7 +299,7 @@ footer strong{color:var(--cream)}
 
   /* LAYOUT */
   .admin-wrap{grid-template-columns:1fr}
-  .admin-side{display:none}
+  .admin-side{display:block}
   .form-row,.form-r{grid-template-columns:1fr}
   .hero-title{font-size:26px}
   .hero{padding:1.8rem 1rem 0}
