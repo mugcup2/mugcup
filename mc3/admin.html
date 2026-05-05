@@ -25,16 +25,20 @@
   </div>
 </nav>
 
-<div class="admin-wrap">
-  <div class="admin-side">
-    <div style="color:rgba(232,213,183,.4);font-size:10px;font-weight:700;padding:5px 12px;margin-bottom:5px">القائمة</div>
-    <div class="admin-nav">
-      <a href="#" class="on" id="nav-stats"    onclick="sw('stats',this)">📊 الإحصائيات</a>
-      <a href="#" id="nav-products" onclick="sw('products',this)">🛍 المنتجات</a>
-      <a href="#" id="nav-orders"   onclick="sw('orders',this)">📦 الطلبيات <span id="new-badge" style="background:#f59e0b;color:#fff;border-radius:50%;width:17px;height:17px;font-size:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;vertical-align:middle;margin-right:4px"></span></a>
-    </div>
-  </div>
+<!-- TOP TAB BAR -->
+<div style="background:var(--burg3);padding:.6rem 1.5rem;display:flex;gap:.5rem;border-bottom:1px solid rgba(232,213,183,.1)">
+  <button onclick="sw('stats',this)" id="nav-stats"
+    style="flex:1;padding:10px;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;background:rgba(232,213,183,.15);color:var(--cream);transition:.2s"
+    class="admin-tab on">📊 الإحصائيات</button>
+  <button onclick="sw('products',this)" id="nav-products"
+    style="flex:1;padding:10px;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;background:rgba(232,213,183,.08);color:rgba(232,213,183,.6);transition:.2s"
+    class="admin-tab">🛍 المنتجات</button>
+  <button onclick="sw('orders',this)" id="nav-orders"
+    style="flex:1;padding:10px;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;background:rgba(232,213,183,.08);color:rgba(232,213,183,.6);transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px"
+    class="admin-tab">📦 الطلبيات <span id="new-badge" style="background:#f59e0b;color:#fff;border-radius:50%;width:17px;height:17px;font-size:9px;display:inline-flex;align-items:center;justify-content:center;font-weight:900"></span></button>
+</div>
 
+<div class="admin-wrap" style="grid-template-columns:1fr">
   <div class="admin-main">
 
     <!-- STATS -->
@@ -107,7 +111,6 @@
     </div>
 
   </div>
-</div>
 
 <!-- EDIT MODAL -->
 <div class="overlay" id="edit-ov">
@@ -133,8 +136,13 @@ function logout(){ sessionStorage.removeItem('mc_admin'); location.href='login.h
 
 function sw(pg,el){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.admin-nav a').forEach(a=>a.classList.remove('on'));
-  document.getElementById('pg-'+pg).classList.add('on'); el.classList.add('on');
+  document.querySelectorAll('.admin-tab').forEach(a=>{
+    a.style.background='rgba(232,213,183,.08)';
+    a.style.color='rgba(232,213,183,.6)';
+  });
+  document.getElementById('pg-'+pg).classList.add('on');
+  el.style.background='rgba(232,213,183,.2)';
+  el.style.color='var(--cream)';
   if(pg==='products') renderProdTab(curPTab);
   if(pg==='orders') renderOrders();
   if(pg==='stats') renderStats();
