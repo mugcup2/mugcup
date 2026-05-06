@@ -273,17 +273,24 @@ footer strong{color:var(--cream)}
   /* GALLERY FIX */
   .gal-main{
     width:100% !important;
-    height:240px !important;
+    height:auto !important;
+    max-height:320px !important;
     border-radius:10px;
     overflow:hidden;
     background:var(--soft);
   }
-  .gal-main img,.gal-main video{
+  .gal-main img{
     width:100% !important;
-    height:100% !important;
+    height:auto !important;
+    max-height:320px !important;
     object-fit:contain !important;
     display:block;
     background:var(--soft);
+  }
+  .gal-main video{
+    width:100% !important;
+    height:auto !important;
+    display:block;
   }
   .gal-th{width:50px !important;height:50px !important}
 
