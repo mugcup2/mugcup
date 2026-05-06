@@ -273,8 +273,7 @@ footer strong{color:var(--cream)}
   /* GALLERY FIX */
   .gal-main{
     width:100% !important;
-    aspect-ratio:1/1 !important;
-    height:auto !important;
+    height:240px !important;
     border-radius:10px;
     overflow:hidden;
     background:var(--soft);
@@ -284,6 +283,7 @@ footer strong{color:var(--cream)}
     height:100% !important;
     object-fit:contain !important;
     display:block;
+    background:var(--soft);
   }
   .gal-th{width:50px !important;height:50px !important}
 
