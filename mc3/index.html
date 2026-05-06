@@ -234,15 +234,7 @@ function selectOpt(key, val, el, groupId){
 
 function addToCartFromDet(id){
   const p=products.find(x=>x.id===id); if(!p) return;
-  // Check all required options selected
-  const requiredOpts = [];
-  if(p.colors&&p.colors.length>0) requiredOpts.push('color');
-  if(p.options) p.options.forEach(o=>requiredOpts.push(o.label));
-  const missing = requiredOpts.filter(k=>!detSelOpts[k]);
-  if(missing.length>0){
-    document.getElementById('opts-warning').style.display='block';
-    return;
-  }
+  // Colors are optional - not required
   addToCart(id, detQty, detSelOpts);
   closeDet();
 }
