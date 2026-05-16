@@ -71,23 +71,23 @@ nav{background:var(--burg);height:62px;padding:0 1.8rem;display:flex;align-items
 /* OVERLAY / MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(42,10,16,.65);z-index:400;align-items:center;justify-content:center;padding:1rem}
 .overlay.open{display:flex}
-.modal{background:var(--white);border-radius:18px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;position:relative}
+.modal{background:var(--white);border-radius:18px;width:100%;max-width:400px;max-height:98vh;overflow-y:auto;position:relative}
 .modal-x{position:absolute;top:12px;left:12px;background:var(--soft);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;color:var(--burg);z-index:10}
 .modal-x:hover{background:var(--border)}
 
 /* PRODUCT DETAIL */
-.det-grid{display:grid;grid-template-columns:1fr;max-width:400px;margin:0 auto}
-.det-gallery{background:var(--soft);border-radius:18px 18px 0 0;padding:1rem;display:flex;flex-direction:column;gap:8px}
+.det-grid{display:grid;grid-template-columns:1fr 1fr;max-width:400px;margin:0 auto;align-items:start}
+.det-gallery{background:var(--soft);border-radius:18px 0 0 18px;padding:.8rem;display:flex;flex-direction:column;gap:6px}
 .gal-main{width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:var(--soft);cursor:zoom-in}
 .gal-main img,.gal-main video{width:100%;height:100%;object-fit:contain;background:var(--white);display:block}
 .gal-thumbs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;flex-wrap:nowrap;min-height:52px}
 .gal-th{width:60px;height:60px;border-radius:7px;overflow:hidden;cursor:pointer;border:2px solid transparent;flex-shrink:0;aspect-ratio:1/1}
 .gal-th:hover,.gal-th.on{border-color:var(--burg)}
 .gal-th img,.gal-th video{width:100%;height:100%;object-fit:cover;display:block}
-.det-info{padding:1.2rem;display:flex;flex-direction:column;gap:10px;background:var(--white);border-radius:0 0 18px 18px}
-.det-info h2{font-size:19px;font-weight:900;color:var(--burg)}
-.det-price{font-size:24px;font-weight:900;color:var(--burg)}
-.det-desc{font-size:13px;color:var(--muted);line-height:1.7}
+.det-info{padding:1rem .8rem;display:flex;flex-direction:column;gap:8px;background:var(--white);border-radius:0 18px 18px 0}
+.det-info h2{font-size:15px;font-weight:900;color:var(--burg)}
+.det-price{font-size:18px;font-weight:900;color:var(--burg)}
+.det-desc{font-size:11px;color:var(--muted);line-height:1.5}
 
 /* OPTIONS (color / size / etc.) */
 .opt-group{display:flex;flex-direction:column;gap:6px}
