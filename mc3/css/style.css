@@ -328,11 +328,11 @@ footer strong{color:var(--cream)}
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:2.5rem 2.5rem 2.5rem 2.5rem;
-  min-height:200px;
+  padding:3rem 4rem;
+  min-height:280px;
   overflow:hidden;
   direction:ltr;
-  gap:1rem;
+  gap:2rem;
 }
 .hero-new-text{
   flex:1;
@@ -348,7 +348,7 @@ footer strong{color:var(--cream)}
   letter-spacing:1px;
 }
 .hero-new-title{
-  font-size:36px;
+  font-size:44px;
   font-weight:900;
   color:var(--burg);
   line-height:1.1;
@@ -375,10 +375,10 @@ footer strong{color:var(--cream)}
   align-items:center;
 }
 .hero-arch{
-  width:min(260px,45vw);
-  height:min(200px,38vw);
+  width:min(360px,42vw);
+  height:min(300px,38vw);
   background:var(--cream2);
-  border-radius:50% 50% 0 0 / 60% 60% 0 0;
+  border-radius:50% 50% 0 0 / 55% 55% 0 0;
   overflow:hidden;
   display:flex;
   align-items:flex-end;
