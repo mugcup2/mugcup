@@ -328,11 +328,11 @@ footer strong{color:var(--cream)}
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:3rem 4rem;
-  min-height:280px;
+  padding:4rem 6rem;
+  min-height:calc(100vh - 62px);
   overflow:hidden;
   direction:ltr;
-  gap:2rem;
+  gap:3rem;
 }
 .hero-new-text{
   flex:1;
@@ -348,7 +348,7 @@ footer strong{color:var(--cream)}
   letter-spacing:1px;
 }
 .hero-new-title{
-  font-size:44px;
+  font-size:58px;
   font-weight:900;
   color:var(--burg);
   line-height:1.1;
@@ -358,14 +358,15 @@ footer strong{color:var(--cream)}
   background:var(--burg);
   color:var(--cream);
   border:none;
-  padding:12px 28px;
+  padding:16px 40px;
   border-radius:6px;
-  font-size:13px;
+  font-size:14px;
   font-weight:700;
-  letter-spacing:2px;
+  letter-spacing:3px;
   cursor:pointer;
   transition:.2s;
   font-family:'Tajawal',sans-serif;
+  margin-top:1rem;
 }
 .hero-new-btn:hover{background:var(--burg2)}
 .hero-new-img{
@@ -375,13 +376,13 @@ footer strong{color:var(--cream)}
   align-items:center;
 }
 .hero-arch{
-  width:min(360px,42vw);
-  height:min(300px,38vw);
+  width:min(500px,45vw);
+  height:min(480px,44vw);
   background:var(--cream2);
-  border-radius:50% 50% 0 0 / 55% 55% 0 0;
+  border-radius:50% 50% 0 0 / 50% 50% 0 0;
   overflow:hidden;
   display:flex;
-  align-items:flex-end;
+  align-items:center;
   justify-content:center;
 }
 .hero-arch img{
@@ -390,9 +391,9 @@ footer strong{color:var(--cream)}
   object-fit:cover;
   object-position:center bottom;
 }
-@media(max-width:480px){
-  .hero-new{padding:1.5rem 1rem;min-height:140px}
-  .hero-new-title{font-size:24px}
-  .hero-arch{width:min(160px,42vw);height:min(130px,35vw)}
-  .hero-new-btn{padding:9px 20px;font-size:12px}
+@media(max-width:680px){
+  .hero-new{padding:2rem 1.5rem;min-height:50vh;gap:1rem}
+  .hero-new-title{font-size:32px}
+  .hero-arch{width:min(200px,44vw);height:min(180px,42vw)}
+  .hero-new-btn{padding:10px 22px;font-size:12px}
 }
